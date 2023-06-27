@@ -1,18 +1,17 @@
-package internal
+package vrpSimple
 
 import (
 	"fmt"
-	"github.com/Nkhinatolla/vrpSimple/vrpSimple"
 	"time"
 )
 
 type EtaAlgorithmService struct {
 	InfDatetime time.Time
 	PointIndex  map[string]int
-	Points      []vrpSimple.Point
+	Points      []Point
 }
 
-func reverse(arr []vrpSimple.Point) {
+func reverse(arr []Point) {
 	length := len(arr)
 	for i := 0; i < length/2; i++ {
 		j := length - 1 - i
@@ -20,11 +19,11 @@ func reverse(arr []vrpSimple.Point) {
 	}
 }
 
-func NewEtaAlgorithmService(points []vrpSimple.Point) *EtaAlgorithmService {
+func NewEtaAlgorithmService(points []Point) *EtaAlgorithmService {
 	service := &EtaAlgorithmService{
 		InfDatetime: time.Date(2100, 10, 14, 0, 0, 0, 0, time.UTC),
 		PointIndex:  make(map[string]int),
-		Points:      make([]vrpSimple.Point, 0),
+		Points:      make([]Point, 0),
 	}
 
 	for _, point := range points {
@@ -34,7 +33,7 @@ func NewEtaAlgorithmService(points []vrpSimple.Point) *EtaAlgorithmService {
 	return service
 }
 
-func (s *EtaAlgorithmService) AddPoint(point vrpSimple.Point) {
+func (s *EtaAlgorithmService) AddPoint(point Point) {
 	s.Points = append(s.Points, point)
 	s.PointIndex[point.ID] = len(s.Points) - 1
 }
@@ -46,7 +45,7 @@ func (s *EtaAlgorithmService) GetPoint(id string) *int {
 	return nil
 }
 
-func (s *EtaAlgorithmService) DependenciesCheck(mask int, masks []int, point vrpSimple.Point) bool {
+func (s *EtaAlgorithmService) DependenciesCheck(mask int, masks []int, point Point) bool {
 	for _, id := range point.Dependencies {
 		if pointID := s.GetPoint(id); pointID != nil {
 			if mask&masks[*pointID] == 0 {
@@ -57,7 +56,7 @@ func (s *EtaAlgorithmService) DependenciesCheck(mask int, masks []int, point vrp
 	return true
 }
 
-func (s *EtaAlgorithmService) Calculate(durations [][]int, ignoreShouldArrivedAt bool) ([]vrpSimple.Point, error) {
+func (s *EtaAlgorithmService) Calculate(durations [][]int, ignoreShouldArrivedAt bool) ([]Point, error) {
 	nodeCount := len(s.Points)
 	now := time.Now().UTC()
 	masks := make([]int, nodeCount)
@@ -128,7 +127,7 @@ func (s *EtaAlgorithmService) Calculate(durations [][]int, ignoreShouldArrivedAt
 		return nil, fmt.Errorf("there is no route ")
 	}
 
-	result := make([]vrpSimple.Point, 0)
+	result := make([]Point, 0)
 	current := dp[answer]
 	lastNode := answer[1]
 	for current != [2]interface{}{} {

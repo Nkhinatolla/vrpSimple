@@ -89,3 +89,24 @@ func (s *OSRMService) GetTable(points []Point) (map[string]interface{}, error) {
 	urlEnd := s.TablePath + s.Profile + pointsStr
 	return s.SendRequest(urlEnd)
 }
+
+func (s *OSRMService) GetDurationsByTable(points []Point) ([][]int, error) {
+	result, err := s.GetTable(points)
+	if err != nil {
+		return nil, err
+	}
+
+	durationsRaw, _ := result["durations"].([]interface{})
+
+	durations := make([][]int, len(durationsRaw))
+	for i, row := range durationsRaw {
+		rowSlice, _ := row.([]interface{})
+		durations[i] = make([]int, len(rowSlice))
+		for j, val := range rowSlice {
+			num, _ := val.(float64)
+			durations[i][j] = int(num) / 60
+		}
+	}
+
+	return durations, nil
+}
