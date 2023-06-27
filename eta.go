@@ -1,4 +1,4 @@
-package vrpSimple
+package vrp_simple
 
 type EtaService struct {
 	Points        []Point
