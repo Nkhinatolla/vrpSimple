@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	// Comment
 	point_1 := Point{
 		ID:                "courier_1",
 		Dependencies:      []string{},
