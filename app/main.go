@@ -1,27 +1,29 @@
-package vrp_simple
+package main
 
 import (
+	"app/domain"
+	"app/services"
 	"fmt"
 	"time"
 )
 
 func main() {
 	// Comment
-	point_1 := Point{
+	point_1 := domain.EtaPoint{
 		ID:                "courier_1",
 		Dependencies:      []string{},
 		ShouldBeArrivedAt: time.Now().Add(3 * time.Hour),
 		Latitude:          43.189297,
 		Longitude:         76.871927,
 	}
-	point_2 := Point{
+	point_2 := domain.EtaPoint{
 		ID:                "point_1",
 		Dependencies:      []string{"courier_1"},
 		ShouldBeArrivedAt: time.Now().Add(3 * time.Hour),
 		Latitude:          43.269373,
 		Longitude:         76.936449,
 	}
-	point_3 := Point{
+	point_3 := domain.EtaPoint{
 		ID:                "point_2",
 		Dependencies:      []string{"courier_1"},
 		ShouldBeArrivedAt: time.Now().Add(3 * time.Hour),
@@ -29,22 +31,19 @@ func main() {
 		Longitude:         76.871927,
 	}
 
-	points := make([]Point, 3)
+	points := make([]domain.EtaPoint, 3)
 	points[0] = point_1
 	points[1] = point_2
 	points[2] = point_3
 
 	//durations := getManualDurations()
-	osrmService := NewOSRMService("", "walking")
-	durations, err := osrmService.GetDurationsByTable(points)
-
-	fmt.Println(durations)
+	etaService := services.NewEtaService(points, "https://osrm02.chocodelivery.kz", "walking", 5, 1.5)
+	points, err := etaService.FindOptimalEta(false)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	points, err = NewEtaAlgorithmService(points).Calculate(durations, false)
 	if err != nil {
 		fmt.Println(err)
 	}

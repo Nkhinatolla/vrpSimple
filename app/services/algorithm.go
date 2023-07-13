@@ -1,6 +1,7 @@
-package vrp_simple
+package services
 
 import (
+	"app/domain"
 	"fmt"
 	"time"
 )
@@ -8,10 +9,10 @@ import (
 type EtaAlgorithmService struct {
 	InfDatetime time.Time
 	PointIndex  map[string]int
-	Points      []Point
+	Points      []domain.EtaPoint
 }
 
-func reverse(arr []Point) {
+func reverse(arr []domain.EtaPoint) {
 	length := len(arr)
 	for i := 0; i < length/2; i++ {
 		j := length - 1 - i
@@ -19,11 +20,11 @@ func reverse(arr []Point) {
 	}
 }
 
-func NewEtaAlgorithmService(points []Point) *EtaAlgorithmService {
+func NewEtaAlgorithmService(points []domain.EtaPoint) *EtaAlgorithmService {
 	service := &EtaAlgorithmService{
 		InfDatetime: time.Date(2100, 10, 14, 0, 0, 0, 0, time.UTC),
 		PointIndex:  make(map[string]int),
-		Points:      make([]Point, 0),
+		Points:      make([]domain.EtaPoint, 0),
 	}
 
 	for _, point := range points {
@@ -33,7 +34,7 @@ func NewEtaAlgorithmService(points []Point) *EtaAlgorithmService {
 	return service
 }
 
-func (s *EtaAlgorithmService) AddPoint(point Point) {
+func (s *EtaAlgorithmService) AddPoint(point domain.EtaPoint) {
 	s.Points = append(s.Points, point)
 	s.PointIndex[point.ID] = len(s.Points) - 1
 }
@@ -45,7 +46,7 @@ func (s *EtaAlgorithmService) GetPoint(id string) *int {
 	return nil
 }
 
-func (s *EtaAlgorithmService) DependenciesCheck(mask int, masks []int, point Point) bool {
+func (s *EtaAlgorithmService) DependenciesCheck(mask int, masks []int, point domain.EtaPoint) bool {
 	for _, id := range point.Dependencies {
 		if pointID := s.GetPoint(id); pointID != nil {
 			if mask&masks[*pointID] == 0 {
@@ -56,7 +57,7 @@ func (s *EtaAlgorithmService) DependenciesCheck(mask int, masks []int, point Poi
 	return true
 }
 
-func (s *EtaAlgorithmService) Calculate(durations [][]int, ignoreShouldArrivedAt bool) ([]Point, error) {
+func (s *EtaAlgorithmService) Calculate(durations [][]int, ignoreShouldArrivedAt bool) ([]domain.EtaPoint, error) {
 	nodeCount := len(s.Points)
 	now := time.Now().UTC()
 	masks := make([]int, nodeCount)
@@ -127,7 +128,7 @@ func (s *EtaAlgorithmService) Calculate(durations [][]int, ignoreShouldArrivedAt
 		return nil, fmt.Errorf("there is no route ")
 	}
 
-	result := make([]Point, 0)
+	result := make([]domain.EtaPoint, 0)
 	current := dp[answer]
 	lastNode := answer[1]
 	for current != [2]interface{}{} {

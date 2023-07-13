@@ -1,8 +1,8 @@
-package vrp_simple
+package domain
 
 import "time"
 
-type Point struct {
+type EtaPoint struct {
 	ID                string
 	Dependencies      []string
 	ShouldBeArrivedAt time.Time

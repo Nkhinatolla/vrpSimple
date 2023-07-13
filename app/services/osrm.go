@@ -1,9 +1,9 @@
-package vrp_simple
+package services
 
 import (
+	"app/domain"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 )
@@ -35,7 +35,7 @@ func NewOSRMService(host string, profile string) *OSRMService {
 	}
 }
 
-func (s *OSRMService) PointsToFormattedString(points []Point) string {
+func (s *OSRMService) PointsToFormattedString(points []domain.EtaPoint) string {
 	formattedPoints := make([]string, len(points))
 	for i, point := range points {
 		formattedPoints[i] = fmt.Sprintf("%.6f,%.6f", point.Longitude, point.Latitude)
@@ -50,12 +50,7 @@ func (s *OSRMService) SendRequest(urlEnd string) (map[string]interface{}, error)
 	if err != nil {
 		return nil, err
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-
-		}
-	}(response.Body)
+	defer response.Body.Close()
 
 	var result map[string]interface{}
 	err = json.NewDecoder(response.Body).Decode(&result)
@@ -72,41 +67,74 @@ func (s *OSRMService) SendRequest(urlEnd string) (map[string]interface{}, error)
 	return result, nil
 }
 
-func (s *OSRMService) GetRoutes(points []Point) (map[string]interface{}, error) {
+func (s *OSRMService) GetRoutes(points []domain.EtaPoint) (domain.OSRMRoute, error) {
 	pointsStr := s.PointsToFormattedString(points)
 	urlEnd := s.RoutePath + s.Profile + pointsStr
-	return s.SendRequest(urlEnd)
+
+	result, err := s.SendRequest(urlEnd)
+	responseBytes, _ := json.Marshal(result)
+	response := domain.OSRMRoute{}
+	err = json.Unmarshal(responseBytes, &response)
+
+	if err != nil {
+		return domain.OSRMRoute{}, err
+	}
+	return response, nil
 }
 
-func (s *OSRMService) GetTrips(points []Point) (map[string]interface{}, error) {
+func (s *OSRMService) GetTrips(points []domain.EtaPoint) (domain.OSRMTrip, error) {
 	pointsStr := s.PointsToFormattedString(points)
 	urlEnd := s.TripPath + s.Profile + pointsStr + "?source=first"
-	return s.SendRequest(urlEnd)
+
+	result, err := s.SendRequest(urlEnd)
+	responseBytes, _ := json.Marshal(result)
+
+	response := domain.OSRMTrip{}
+	err = json.Unmarshal(responseBytes, &response)
+
+	if err != nil {
+		return domain.OSRMTrip{}, err
+	}
+	return response, nil
 }
 
-func (s *OSRMService) GetTable(points []Point) (map[string]interface{}, error) {
+func (s *OSRMService) GetTable(points []domain.EtaPoint) (domain.OSRMTable, error) {
 	pointsStr := s.PointsToFormattedString(points)
 	urlEnd := s.TablePath + s.Profile + pointsStr
-	return s.SendRequest(urlEnd)
+
+	result, err := s.SendRequest(urlEnd)
+	responseBytes, _ := json.Marshal(result)
+	response := domain.OSRMTable{}
+	err = json.Unmarshal(responseBytes, &response)
+
+	if err != nil {
+		return domain.OSRMTable{}, err
+	}
+	return response, nil
 }
 
-func (s *OSRMService) GetDurationsByTable(points []Point) ([][]int, error) {
+func (s *OSRMService) GetDurationsByTable(points []domain.EtaPoint) ([][]int, error) {
 	result, err := s.GetTable(points)
 	if err != nil {
 		return nil, err
 	}
-
-	durationsRaw, _ := result["durations"].([]interface{})
-
-	durations := make([][]int, len(durationsRaw))
-	for i, row := range durationsRaw {
-		rowSlice, _ := row.([]interface{})
-		durations[i] = make([]int, len(rowSlice))
-		for j, val := range rowSlice {
-			num, _ := val.(float64)
-			durations[i][j] = int(num) / 60
+	durations := ConvertFloat64ToInt(result.Durations)
+	for i := range durations {
+		for j := range durations[i] {
+			durations[i][j] = durations[i][j] / 60
 		}
 	}
 
 	return durations, nil
+}
+
+func ConvertFloat64ToInt(slice [][]float64) [][]int {
+	result := make([][]int, len(slice))
+	for i := range slice {
+		result[i] = make([]int, len(slice[i]))
+		for j := range slice[i] {
+			result[i][j] = int(slice[i][j])
+		}
+	}
+	return result
 }
