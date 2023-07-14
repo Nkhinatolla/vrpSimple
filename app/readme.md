@@ -19,7 +19,7 @@
 4. В файле `go.mod` добавьте следующую строку, чтобы добавить библиотеку в зависимости:
 
    ```
-   require git.chocofood.kz/chocodelivery/assignments/vrp-simple v1.0.4
+   require git.chocofood.kz/chocodelivery/assignments/vrp-simple v1.0.5
    ```
 
 ## Использование
