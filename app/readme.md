@@ -54,7 +54,9 @@
     points[1] = point_2
     points[2] = point_3
 
-    etaService := services.NewEtaService(points, "https://osrm02.chocodelivery.kz", "driving", 5, 1.5)
+	osrmHost := "OSRM HOST"
+	profile := "driving|cycling|walking"
+    etaService := services.NewEtaService(points, osrmHost, profile, 5, 1.5)
     points, err := etaService.FindOptimalEta(false)
 
     if err != nil {
