@@ -1,9 +1,9 @@
 package services
 
 import (
-	"app/domain"
 	"encoding/json"
 	"fmt"
+	"git.chocofood.kz/chocodelivery/assignments/vrp-simple/domain"
 	"net/http"
 	"strings"
 )

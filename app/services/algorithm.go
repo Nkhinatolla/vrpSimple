@@ -1,8 +1,8 @@
 package services
 
 import (
-	"app/domain"
 	"fmt"
+	"git.chocofood.kz/chocodelivery/assignments/vrp-simple/domain"
 	"time"
 )
 

@@ -1,7 +1,7 @@
 package services
 
 import (
-	"app/domain"
+	"git.chocofood.kz/chocodelivery/assignments/vrp-simple/domain"
 )
 
 type EtaService struct {
@@ -35,7 +35,6 @@ func (s *EtaService) FindOptimalEta(ignoreShouldArrivedAt bool) ([]domain.EtaPoi
 func (s *EtaService) GetDurations() ([][]int, error) {
 	osrmService := NewOSRMService(s.Host, s.Profile)
 	durations, err := osrmService.GetDurationsByTable(s.Points)
-
 	for i := range durations {
 		for j := range durations[i] {
 			durations[i][j] = int(float64(durations[i][j])*s.TravelTimeMultiplier) + s.PickupLagTime
